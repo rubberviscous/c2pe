@@ -16,9 +16,12 @@ Holding Gesang flowers in my hand
 ## Installation
 
 This CLI requires Python 3 and above.
+Clone this repo and then run following from root directory:
 ```bash
-pip install c2pe
+pip install -e .
 ```
+
+This will build the package from the local source code.
 
 ## Usage
 
