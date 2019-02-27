@@ -10,8 +10,8 @@ class TestTranslate(TestCase):
         cls.parser = create_parser()
 
     @staticmethod
-    def _get_content():
-        with open('files/lyrics.txt', 'r') as f:
+    def _get_content(path='files/lyrics.txt'):
+        with open(path, 'r') as f:
             return f.read()
 
     def setUp(self):
@@ -37,32 +37,24 @@ class TestTranslate(TestCase):
         text = "test"
         path = "files/test.txt"
         write_output(text, path)
-
-        filename_pair = os.path.splitext(path)
-        expected_path = f"{filename_pair[0]}_translated{filename_pair[1]}"
-
-        self.assertTrue(os.path.exists(expected_path))
-        os.remove(expected_path)
+        self.assertTrue(os.path.exists(path))
+        os.remove(path)
 
     def test_write_output_absolute_path(self):
         text = "test"
         abs_path = os.path.dirname(os.path.abspath(__file__))
         path = f"{abs_path}/files/test.txt"
         write_output(text, path)
-        filename_pair = os.path.splitext(path)
-        expected_path = f"{filename_pair[0]}_translated{filename_pair[1]}"
-        self.assertTrue(os.path.exists(expected_path))
-        os.remove(expected_path)
+        self.assertTrue(os.path.exists(path))
+        os.remove(path)
 
     def test_write_output_absolute_path_with_no_file_extension(self):
         text = "test"
         abs_path = os.path.dirname(os.path.abspath(__file__))
         path = f"{abs_path}/files/test"
         write_output(text, path)
-        filename_pair = os.path.splitext(path)
-        expected_path = f"{filename_pair[0]}_translated{filename_pair[1]}"
-        self.assertTrue(os.path.exists(expected_path))
-        os.remove(expected_path)
+        self.assertTrue(os.path.exists(path))
+        os.remove(path)
 
     @mock.patch('c2pe.entrypoint.write_to_stdout')
     def test_write_output_stdout(self, *mocks):
@@ -82,5 +74,10 @@ class TestTranslate(TestCase):
         expected_output = """手中握着格桑花呀\nshǒuzhōngwòzháogésānghuāyā\nHolding Gesang flowers in my hand\n\n"""
         self.assertEqual(actual_output, expected_output)
 
+    def test_remove_empty_lines(self):
+        text = self._get_content('files/empty_lines.txt')
+        self.translator = ChineseTranslator(text)
+        normalized_text = self.translator.output()
+        print(normalized_text)
 
 

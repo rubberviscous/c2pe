@@ -20,7 +20,13 @@ class ChineseTranslator(object):
     def _pinyin(self):
         return pinyin.get(self.text)
 
+    def normalize(self) -> str:
+        text_list = [line for line in self.text.split("\n") if line.strip() != '']
+
+        return '\n'.join(text_list)
+
     def output(self) -> str:
+        self.text = self.normalize()
         text_list = self.text.split("\n")
 
         translated_text = self._translate()
@@ -68,9 +74,10 @@ def write_to_file(text, path):
     path = os.path.expanduser(path)
     filename_pair = os.path.splitext(path)
 
-    new_file_path = f"{filename_pair[0]}_translated{filename_pair[1]}"
+    if not filename_pair[0] and not filename_pair[1]:
+        raise ValueError("invalid path specified")
 
-    with open(new_file_path, 'w+') as f:
+    with open(path, 'w+') as f:
         f.write(text)
 
 
