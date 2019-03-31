@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import importlib
 import os
 
 from googletrans import Translator
@@ -89,8 +90,17 @@ def write_to_stdout(text):
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("input", type=str, help="The path to file containing Chinese characters.")
-    parser.add_argument("--output", type=str, help="The path to save the output.")
+    parser.add_argument("--backend", type=str, help="The backend to use to save the file. Defaults to local.",
+                        default="local")
+    # parser.add_argument("--output", type=str, help="The path to save the output.")
     return parser
+
+
+def get_backend_cls(name: str):
+    module_path = f'c2pe.backends.{name}_backend'
+    module = importlib.import_module(module_path)
+    backend_cls = getattr(module, f'{name.capitalize()}Backend')
+    return backend_cls
 
 
 def main():
@@ -102,7 +112,10 @@ def main():
     translator = ChineseTranslator(chinese_chars)
     translated_output = translator.output()
 
-    write_output(translated_output, args.output)
+    # import backend
+    backend_cls = get_backend_cls(args.backend)
+    backend_instance = backend_cls(text=translated_output, source_path=args.output)
+    backend_instance.save()
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 import os
 from unittest import TestCase, mock
 
-from c2pe.entrypoint import create_parser, load_file, write_output, ChineseTranslator
+from c2pe.entrypoint import create_parser, load_file, ChineseTranslator
 
 
 class TestTranslate(TestCase):
@@ -33,43 +33,10 @@ class TestTranslate(TestCase):
         expected_text = "手中握着格桑花呀"
         self.assertEqual(expected_text, actual_text)
 
-    def test_write_output_relative_path(self):
-        text = "test"
-        path = "files/test.txt"
-        write_output(text, path)
-        self.assertTrue(os.path.exists(path))
-        os.remove(path)
-
-    def test_write_output_absolute_path(self):
-        text = "test"
-        abs_path = os.path.dirname(os.path.abspath(__file__))
-        path = f"{abs_path}/files/test.txt"
-        write_output(text, path)
-        self.assertTrue(os.path.exists(path))
-        os.remove(path)
-
-    def test_write_output_absolute_path_with_no_file_extension(self):
-        text = "test"
-        abs_path = os.path.dirname(os.path.abspath(__file__))
-        path = f"{abs_path}/files/test"
-        write_output(text, path)
-        self.assertTrue(os.path.exists(path))
-        os.remove(path)
-
-    @mock.patch('c2pe.entrypoint.write_to_stdout')
-    def test_write_output_stdout(self, *mocks):
-        # Ensure that output is written to stdout if no path is given
-        stdout_mock = mocks[0]
-        text = "test"
-        path = None
-        write_output(text, path)
-        self.assertEqual(1, stdout_mock.call_count)
-
     @mock.patch('c2pe.entrypoint.ChineseTranslator._translate')
     def test_translate(self, *mocks):
         translate_mock = mocks[0]
         translate_mock.return_value = "Holding Gesang flowers in my hand"
-        text = self._get_content()
         actual_output = self.translator.output()
         expected_output = """手中握着格桑花呀\nshǒuzhōngwòzháogésānghuāyā\nHolding Gesang flowers in my hand\n\n"""
         self.assertEqual(actual_output, expected_output)
