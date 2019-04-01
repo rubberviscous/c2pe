@@ -2,10 +2,12 @@
 
 import argparse
 import importlib
-import os
+from typing import List, Tuple
 
 from googletrans import Translator
 import pinyin
+
+from c2pe.utils import load_file
 
 
 class ChineseTranslator(object):
@@ -26,7 +28,13 @@ class ChineseTranslator(object):
 
         return '\n'.join(text_list)
 
-    def output(self) -> str:
+    def output(self) -> List[Tuple]:
+        """
+        Each line of chinese characters are translated to pinyin and english
+        :return:
+        A list of tuples. Each tuple consists of chinese, pinyin, and english.
+        [(手中握着格桑花呀, shǒuzhōngwòzháogésānghuāyā, Holding Gesang flowers in my hand)]
+        """
         self.text = self.normalize()
         text_list = self.text.split("\n")
 
@@ -39,53 +47,7 @@ class ChineseTranslator(object):
         zipped = zip(text_list, pinyin_list, translated_text_list)
         output = list(zipped)
 
-        output_text = ""
-        for line in output:
-            for sub_line in line:
-                output_text += f'{sub_line}\n'
-
-            output_text += '\n'
-
-        return output_text
-
-
-def load_file(path: str) -> str:
-    """
-    Will load file and extract all characters as strings, given relative or absolute path
-    :param path:
-    :return str:
-    """
-    # if path begins with ~, will expand path
-    path = os.path.expanduser(path)
-    data = None
-    with open(path, 'r') as f:
-        data = f.read()
-    return data
-
-
-def write_output(text: str, path: str):
-    if path:
-        write_to_file(text, path)
-    else:
-        # output to stdout
-        write_to_stdout(text)
-
-
-def write_to_file(text, path):
-    path = os.path.expanduser(path)
-    filename_pair = os.path.splitext(path)
-
-    if not filename_pair[0] and not filename_pair[1]:
-        raise ValueError("invalid path specified")
-
-    with open(path, 'w+') as f:
-        f.write(text)
-
-
-def write_to_stdout(text):
-    # write output to stdout
-    print(text)
-
+        return output
 
 def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -103,18 +65,22 @@ def get_backend_cls(name: str):
     return backend_cls
 
 
+def translate(file: str) -> List[Tuple]:
+    chinese_chars = load_file(file)
+
+    translator = ChineseTranslator(chinese_chars)
+    return translator.output()
+
+
 def main():
     parser = create_parser()
     args = parser.parse_args()
 
-    chinese_chars = load_file(args.input)
-
-    translator = ChineseTranslator(chinese_chars)
-    translated_output = translator.output()
+    translated_output: List[Tuple] = translate(args.input)
 
     # import backend
     backend_cls = get_backend_cls(args.backend)
-    backend_instance = backend_cls(text=translated_output, source_path=args.output)
+    backend_instance = backend_cls(data=translated_output, source_path=args.input)
     backend_instance.save()
 
 

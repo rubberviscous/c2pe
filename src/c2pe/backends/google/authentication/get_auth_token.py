@@ -31,7 +31,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from c2pe.backends.google.authentication.utils import save_token
 
 
-SCOPE = u'https://www.googleapis.com/auth/documents.readonly'
+SCOPE = u'https://www.googleapis.com/auth/documents'
 
 
 def main(client_secrets_path, scopes, token_path):
